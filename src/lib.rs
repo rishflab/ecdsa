@@ -18,34 +18,12 @@ pub struct Signature {
 // Use .invert() to calculate the inverse of a scalar
 
 pub fn sign(x: Scalar, msg: &str) -> Signature {
-    // k is cryptograpphicaly secure random
-    let k = Scalar::random(&mut rand::thread_rng());
-
-    // perform the group operation k times on the curve generator
-    // R = k * G
-    let R = g!(k * G).mark::<Normal>();
-
-    // Why are we throwing away the y value of this point? We are not. The curve equation is known by
-    // both parties and the y value can be computed if x is known.
-    // It seems that extracting the x-coordinate as opposed to the y-coordinate is a matter of convention.
-    // Although perhaps recomputing x from y is harder.
-    // R = k * G
-    // r = R.x (x component of R)
-    let r = {
-        let (x, _) = R.coordinates();
-        Scalar::from_bytes(x).unwrap().mark::<NonZero>().unwrap()
-    };
-
-    let mut hash = sha2::Sha256::default();
-    hash.update(msg.as_bytes());
-    let hash = Scalar::from_hash(hash);
-
     // k is cryptographically secure random
     // R = k * G
     // r = R.x (x component of R)
+    let r = todo!();
     // s = k^-1(hash + r * x) mod n
-    let k_inv = k.invert();
-    let s = s!(k_inv * (hash + r * x)).mark::<NonZero>().unwrap();
+    let s = todo!();
 
     Signature { r, s }
 }
@@ -55,13 +33,8 @@ pub fn sign(x: Scalar, msg: &str) -> Signature {
 pub fn verify(sig: Signature, msg: &str, X: Point) -> bool {
     let Signature { r, s } = sig;
 
-    let mut hash = sha2::Sha256::default();
-    hash.update(msg.as_bytes());
-    let hash = Scalar::from_hash(hash);
+    // R' is the candidate curve point, R_candidate
 
-    // R' is the candidate curve point
-    // if R'.x == r, the signature is valid
-    //
     // R' = s^-1(hash * G + r * X)
     // R' = (s^-1 * hash * G + s^-1 * r * X)
     // R' = (s^-1 * hash * G + s^-1 * r * x * G)
@@ -71,23 +44,16 @@ pub fn verify(sig: Signature, msg: &str, X: Point) -> bool {
     // R' = (k^-1)^-1 * (hash + r * x)^-1 * (hash + r * x) * G
     // R' = k * 1 * G
     // R' = k * G
-    //
+
     // k = s^-1(hash + r * x)
     // k * s = s * s^-1(hash + r * x)
     // k * k^-1(hash + r * x) = hash + r * x
     // hash + r * x = hash + r * x
-    let s_inv = s.invert();
-    let R_candidate = g!(s_inv * (hash * G + r * X))
-        .mark::<Normal>()
-        .mark::<NonZero>()
-        .unwrap();
 
-    let r_candidate = {
-        let (x, _) = R_candidate.coordinates();
-        Scalar::from_bytes(x).unwrap().mark::<NonZero>().unwrap()
-    };
+    r_candidate = todo!();
 
-    r == r_candidate
+    // if R'.x == r, the signature is valid,
+    r_candidate == r
 }
 
 #[cfg(test)]
